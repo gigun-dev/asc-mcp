@@ -12,7 +12,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 - `infra/`: D1、非公開R2、Access / Managed OAuth。Worker本体・custom domain / DNSはWranglerが管理する。
 - `.github/workflows/build.yml`: **非公開の制御repoでのみ**実行する固定workflow。
 - `scripts/run.py`: 登録済みproject/schemeで、SHA固定checkout → archive → Ad Hoc export → ASC署名検証 → publish。
-- `distribution/`: 既存のAccess・10分署名URL・固定ページ・Bark AES通知を引き継ぐ。ASC distributeへの全面置換は未検証。
+- `distribution/`: 既存のAccess・10分署名URL・固定ページ・Bark AES通知を引き継ぐ。IPA署名検証はASC、R2への送信は公式S3 SDKを利用する。
 
 ## 必要なもの
 
@@ -46,7 +46,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 - 成功時にIPA検証・配布・Bark通知・実機installまで確認する。
 - 元環境のconfig/秘密情報を流用せず、別設定の新しい環境で同じ手順を実行する。
 
-Managed OAuth・D1・Workerは配備済み。CodexのOAuthログインと、実際の認証付きMCP通信（initialize・tools/list・list_apps）を確認した。miniの常駐runnerでプロジェクト生成・コンパイルまで通ったが、署名は `errSecInternalComponent` で失敗した。GUIセッションではキーチェーンが解除され小さなバイナリの署名も成功したため、runnerの `SessionCreate` を無効にして実ビルドを再検証する。ChatGPT・Claudeの接続、runnerからの署名・配布・通知、別環境での構築は未確認。
+Managed OAuth・D1・Workerは配備済み。CodexのOAuthログイン、認証付きMCPの3ツール、GitHub Appによるrunner起動、Macでのarchive・Ad Hoc export・ASC署名検証・R2配布・Barkサーバー受付、固定ページの更新まで実ビルドで確認した。`get_build` は失敗jobにinstall URLを付けず、成功jobではURLを返す。runnerの `SessionCreate` を無効にしてGUIの署名セッションを利用している。ChatGPT・Claudeの接続、今回の通知からの端末install、元環境の秘密情報を流用しない別環境での構築は未確認。
 
 既存の配布サービスを併用する場合は `manage_distribution=false` とし、既存の配布audience/bucketを設定する。既存installサービスのリソースはまだ移管せず、運用切替時にdotfilesからstateを移す。両方から同じAccessリソースを管理しない。ASC distribute publishはS3互換ストレージへの配布物と期限付きリンクを提供するが、現在のAccess付き固定ページ・Bark通知は別途必要。
 
