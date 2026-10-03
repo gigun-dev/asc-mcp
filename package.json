@@ -1,5 +1,5 @@
 {
-  "name": "ios-build",
+  "name": "asc-mcp",
   "private": true,
   "type": "module",
   "scripts": {

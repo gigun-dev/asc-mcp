@@ -15,14 +15,14 @@ export async function authenticate(request,env,keys) {
 }
 export function createApp({verify=authenticate,githubFactory=async env=>githubClient(await installationToken(env))}={}) {
  const app=new Hono();
- app.get('/health',c=>c.json({status:'ok',service:'ios-build'}));
+ app.get('/health',c=>c.json({status:'ok',service:'asc-mcp'}));
  app.use('/mcp',bodyLimit({maxSize:65536}));
  app.all('/mcp',async c=> {
   const origin=c.req.header('Origin');
   if(origin && origin!==new URL(c.req.url).origin) return c.json({error:'Invalid origin'},403);
   let owner;
   try { owner=await verify(c.req.raw,c.env); } catch { return c.json({error:'Unauthorized'},401); }
-  const server=new McpServer({name:'ios-build',version:'0.1.0'});
+  const server=new McpServer({name:'asc-mcp',version:'0.1.0'});
   const result=value=>({content:[{type:'text',text:JSON.stringify(value)}]});
   const guarded=handler=>async input=> {try {return result(await handler(input));}catch(error){console.error(JSON.stringify({event:'tool_failure',error:error.message}));return {isError:true,content:[{type:'text',text:error.message}]};}};
   server.registerTool('list_apps',{description:'List configured iOS apps available for private builds.',inputSchema:{},annotations:{readOnlyHint:true}},guarded(async()=>Object.entries(projects(c.env.PROJECTS_JSON)).map(([name,p])=>({project:name,repository:p.repository,install_url:`${c.env.PUBLIC_ORIGIN}/${name}/`}))));

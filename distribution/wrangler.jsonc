@@ -1,5 +1,5 @@
 {
-  "name": "ios-build-distribution",
+  "name": "asc-mcp-distribution",
   "main": "worker.mjs",
   "compatibility_date": "2026-10-03",
   "workers_dev": false,
@@ -13,7 +13,7 @@
   "r2_buckets": [
     {
       "binding": "ARTIFACTS",
-      "bucket_name": "ios-build-artifacts"
+      "bucket_name": "asc-mcp-artifacts"
     }
   ]
 }

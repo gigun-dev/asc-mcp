@@ -1,5 +1,5 @@
 name: Private iOS build
-run-name: ios-build ${{ inputs.job_id }}
+run-name: asc-mcp ${{ inputs.job_id }}
 on:
   workflow_dispatch:
     inputs:
@@ -18,7 +18,7 @@ jobs:
   build:
     # Publish the template publicly, but execute it only in your private control repo.
     if: github.event.repository.private
-    runs-on: [self-hosted, macOS, ios-build]
+    runs-on: [self-hosted, macOS, asc-mcp]
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683

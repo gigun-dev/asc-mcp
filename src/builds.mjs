@@ -38,7 +38,7 @@ export async function getBuild({env,owner,id,github}) {
  // GitHub has no input filter for runs. Correlate the UUID in a fixed workflow run-name.
  for(let page=1;page<=5;page++) {
   const {workflow_runs:runs}=await github(`/repos/${env.CONTROL_REPOSITORY}/actions/workflows/build.yml/runs?event=workflow_dispatch&per_page=100&page=${page}`);
-  const run=runs.find(r=>r.display_title===`ios-build ${id}`);
+  const run=runs.find(r=>r.display_title===`asc-mcp ${id}`);
   if(run) return {...job,state:run.status,conclusion:run.conclusion,url:run.html_url,install_url:run.conclusion==='success'?`${env.PUBLIC_ORIGIN}/${job.project}/`:undefined};
   if(runs.length<100) break;
  }

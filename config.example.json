@@ -19,5 +19,5 @@
     }
   },
   "installAudience": "FROM_TOFU_INSTALL_AUDIENCE",
-  "artifactBucket": "ios-build-artifacts"
+  "artifactBucket": "asc-mcp-artifacts"
 }

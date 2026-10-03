@@ -2,7 +2,7 @@
 
 [New GitHub App](https://github.com/settings/apps/new)でこのサービス用Appを作る。
 
-- 名前はアカウント内で識別できるもの（例 ios-build-あなたの名前）。Homepage URLは自分のサービスrepo。
+- 名前はアカウント内で識別できるもの（例 asc-mcp-あなたの名前）。Homepage URLは自分のサービスrepo。
 - Webhookは今回は使わないためActiveを外す。ユーザーOAuthのcallback設定は不要（MCP認証はCloudflare Access）。
 - Repository permissionsはActions read/write、Contents read、Pull requests read。その他は追加しない。
 - Install可能なアカウントは自分だけにし、非公開制御repoと対象アプリrepoだけを選択する。

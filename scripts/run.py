@@ -21,7 +21,7 @@ def main():
     project,sha,job=sys.argv[1:4]
     cfg=settings(os.environ.get('PROJECTS_FILE','projects.json'),project,sha,job)
     service=Path(__file__).resolve().parent.parent
-    with tempfile.TemporaryDirectory(prefix='ios-build-') as tmp:
+    with tempfile.TemporaryDirectory(prefix='asc-mcp-') as tmp:
         root=Path(tmp);checkout=root/'source';checkout.mkdir()
         # The credential is provided via the process environment, never a remote URL or argv.
         env=os.environ.copy()

@@ -12,13 +12,18 @@ variable "allowed_emails" { type = set(string) }
 variable "oauth_redirect_uris" { type = list(string) }
 variable "resource_prefix" {
   type    = string
-  default = "ios-build"
+  default = "asc-mcp"
 }
 resource "cloudflare_d1_database" "jobs" {
   account_id = var.account_id
   name       = "${var.resource_prefix}-jobs"
 }
+variable "manage_distribution" {
+  type    = bool
+  default = true
+}
 resource "cloudflare_r2_bucket" "artifacts" {
+  count      = var.manage_distribution ? 1 : 0
   account_id = var.account_id
   name       = "${var.resource_prefix}-artifacts"
 }
@@ -41,6 +46,7 @@ resource "cloudflare_zero_trust_access_application" "mcp" {
   policies = [{ name = "Build owners", decision = "allow", precedence = 1, include = [for email in var.allowed_emails : { email = { email = email } }] }]
 }
 resource "cloudflare_zero_trust_access_application" "install" {
+  count                = var.manage_distribution ? 1 : 0
   account_id           = var.account_id
   name                 = "${var.resource_prefix} installs"
   type                 = "self_hosted"
@@ -50,6 +56,7 @@ resource "cloudflare_zero_trust_access_application" "install" {
   policies             = [{ name = "Install owners", decision = "allow", precedence = 1, include = [for email in var.allowed_emails : { email = { email = email } }] }]
 }
 resource "cloudflare_zero_trust_access_application" "download" {
+  count                = var.manage_distribution ? 1 : 0
   account_id           = var.account_id
   name                 = "${var.resource_prefix} signed downloads"
   type                 = "self_hosted"
@@ -61,8 +68,8 @@ resource "cloudflare_zero_trust_access_application" "download" {
 }
 output "database_id" { value = cloudflare_d1_database.jobs.id }
 output "mcp_audience" { value = cloudflare_zero_trust_access_application.mcp.aud }
-output "install_audience" { value = cloudflare_zero_trust_access_application.install.aud }
-output "artifact_bucket" { value = cloudflare_r2_bucket.artifacts.name }
+output "install_audience" { value = try(cloudflare_zero_trust_access_application.install[0].aud, null) }
+output "artifact_bucket" { value = try(cloudflare_r2_bucket.artifacts[0].name, null) }
 
 variable "state_passphrase" {
   type      = string

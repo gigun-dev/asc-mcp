@@ -14,3 +14,5 @@ projects.json
 distribution/wrangler.production.json
 !infra/example.tfvars
 *.pem
+infra/backend.tf
+infra/*.tfbackend

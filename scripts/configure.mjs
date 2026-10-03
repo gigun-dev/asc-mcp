@@ -11,7 +11,7 @@ await writeFile('wrangler.production.json',JSON.stringify(wrangler,null,2)+'\n')
 const distribution=JSON.parse(await readFile('distribution/wrangler.jsonc','utf8'));
 distribution.account_id=config.accountId;
 distribution.routes=[{pattern:new URL(config.installOrigin).hostname,custom_domain:true}];
-distribution.r2_buckets[0].bucket_name=config.artifactBucket??'ios-build-artifacts';
+distribution.r2_buckets[0].bucket_name=config.artifactBucket??'asc-mcp-artifacts';
 distribution.vars={ACCESS_ISSUER:config.accessIssuer,ACCESS_AUD:config.installAudience,PUBLIC_ORIGIN:config.installOrigin};
 await writeFile('distribution/wrangler.production.json',JSON.stringify(distribution,null,2)+'\n');
 console.log('Generated wrangler.production.json; secrets remain separate.');

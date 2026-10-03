@@ -9,7 +9,7 @@ export async function installationToken(env, fetcher = fetch) {
  if (!response.ok) throw new Error(`GitHub installation authentication failed (${response.status})`);
  return (await response.json()).token;
 }
-function headers(token) { return {'Authorization':`Bearer ${token}`, 'Accept':'application/vnd.github+json','User-Agent':'ios-build','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'}; }
+function headers(token) { return {'Authorization':`Bearer ${token}`, 'Accept':'application/vnd.github+json','User-Agent':'asc-mcp','X-GitHub-Api-Version':'2022-11-28','Content-Type':'application/json'}; }
 export function githubClient(token, fetcher = fetch) {
  return async (path, body) => {
   const r=await fetcher(`https://api.github.com${path}`, {method:body===undefined?'GET':'POST',headers:headers(token), ...(body===undefined?{}:{body:JSON.stringify(body)}), signal:AbortSignal.timeout(20000)});

@@ -18,6 +18,6 @@ test('unauthenticated MCP cannot list tools',async()=> {
 test('real MCP transport initializes and lists only bounded tools',async()=> {
  const app=createApp({verify:async()=> 'fixture-subject'}),env={PROJECTS_JSON:'{}'};
  const call=async(method,params)=>app.request('/mcp',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})},env);
- const init=await call('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'test',version:'1'}});assert.equal(init.status,200);assert.equal((await init.json()).result.serverInfo.name,'ios-build');
+ const init=await call('initialize',{protocolVersion:'2025-03-26',capabilities:{},clientInfo:{name:'test',version:'1'}});assert.equal(init.status,200);assert.equal((await init.json()).result.serverInfo.name,'asc-mcp');
  const tools=await call('tools/list',{});assert.deepEqual((await tools.json()).result.tools.map(t=>t.name).sort(),['build_app','get_build','list_apps']);
 });

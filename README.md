@@ -1,6 +1,6 @@
-# ios-build
+# asc-mcp
 
-クラウドのMCPクライアントから、登録済みiOSアプリのPR/commitをMacでビルド・署名し、認証付き固定ページから私的に配布する。
+ASC CLIをクラウドから使うための認証付きMCPサービス。現在は、登録済みiOSアプリのPR/commitをMacでビルド・署名し、認証付き固定ページから私的に配布する3ツールを提供する。ASC全コマンドの公開は行っていない。
 
 自分が別環境で使え、他の人も設定を差し替えて再構築できることを目標とする。公開コードに本人のアカウント・ドメイン・署名情報を埋め込まない。
 
@@ -24,13 +24,13 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 ## 初期構築
 
 1. 本repoをcloneし `npm ci`。`npm run check` と `python3 -m unittest discover -s tests -p '*_test.py'` を実行。
-2. `infra/example.tfvars`をgitignoredの `infra/config.tfvars`へコピーして値を差し替える。Cloudflare provider用 `CLOUDFLARE_API_TOKEN` と、独立した強い `TF_VAR_state_passphrase` を環境へ設定する。
+2. `infra/example.tfvars`をgitignoredの `infra/config.tfvars`へコピーして値を差し替える。Cloudflare provider用 `CLOUDFLARE_API_TOKEN`（Access・D1・R2の対象リソースへの編集権限）を設定する。加えて、独立した強い `TF_VAR_state_passphrase` を環境へ設定する。
 3. `tofu -chdir=infra init` → `tofu -chdir=infra plan -var-file=config.tfvars -out=change.tfplan` → 内容確認後 `tofu -chdir=infra apply change.tfplan`。state/planは暗号化し、Gitへ入れない。暗号鍵を別途バックアップする。複数環境/担当者で運用するときはロック対応backendも設定する。
 4. `config.example.json`を `config.local.json`へコピー。Tofuのdatabase ID・MCP audience・install audienceを反映し `node scripts/configure.mjs`。生成される2つのproduction Wrangler設定はgitignored。
 5. [GitHub App設定手順](docs/github-app.md)に沿ってAppを登録し、対象repoだけへinstall。制御repoのActions read/write、アプリrepoのContents read / Pull requests readを付与。App ID・installation ID・PKCS#8 PEM秘密鍵をMCP Workerの `GITHUB_APP_ID` / `GITHUB_INSTALLATION_ID` / `GITHUB_APP_PRIVATE_KEY` secretsへ設定する。Apple用APIキーは今回不要。
-6. `npx wrangler d1 migrations apply ios-build-jobs --remote --config wrangler.production.json`、`npx wrangler deploy --config wrangler.production.json`。
+6. `npx wrangler d1 migrations apply asc-mcp-jobs --remote --config wrangler.production.json`、`npx wrangler deploy --config wrangler.production.json`。
 7. 配布Workerへ `DOWNLOAD_SECRET`（ランダム値）を設定し、`npx wrangler deploy --config distribution/wrangler.production.json`。署名検証を配備する前にdownloadパスのAccess例外を利用しない。
-8. **非公開**制御repoを作り、`.github/workflows/build.yml`だけを配置する。varsの `SERVICE_REPOSITORY` に本サービスrepo、`SERVICE_REVISION` に検証済み40桁commit SHAを設定する。ビルドロジックはこの固定版をcheckoutし、制御repoへ複製しない。公開repoの外部PRからrunnerを動かさない。miniへGitHub公式runnerを登録して `ios-build` labelを付ける。ASC・Xcode・署名をrunnerの実行ユーザーで `asc xcode doctor` と実archive/exportで確認する。SSH/GUIで署名結果が異なる場合はここで解決する。
+8. **非公開**制御repoを作り、`.github/workflows/build.yml`だけを配置する。varsの `SERVICE_REPOSITORY` に本サービスrepo、`SERVICE_REVISION` に検証済み40桁commit SHAを設定する。ビルドロジックはこの固定版をcheckoutし、制御repoへ複製しない。公開repoの外部PRからrunnerを動かさない。miniへGitHub公式runnerを登録して `asc-mcp` labelを付ける。ASC・Xcode・署名をrunnerの実行ユーザーで `asc xcode doctor` と実archive/exportで確認する。SSH/GUIで署名結果が異なる場合はここで解決する。
 9. 制御repoのvarsに `PROJECTS_JSON`（configのprojects部分）、`CLOUDFLARE_ACCOUNT_ID`、`OTA_PUBLIC_ORIGIN`、`OTA_R2_BUCKET`を設定。配布用Wrangler設定はworkflowがvarsから生成する。secretsのCloudflare tokenはR2対象bucketへの書込だけに限定。privateアプリrepo取得用 `SOURCE_TOKEN` はContents readへ限定する。実行時の短命GitHub App tokenを使う形への移行は運用受け入れで確認する。
 10. Bark利用時はrunnerの既存暗号化設定ファイルを `BARK_ENV_FILE` varで指定する。秘密情報をworkflowやログへ貼らない。
 11. ChatGPT / Claude / Codexへ `https://YOUR_MCP_HOST/mcp` を追加しAccessログイン。Managed OAuthの許可callback URIは使うクライアントの実値だけを登録する。
@@ -46,7 +46,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 - 成功時にIPA検証・配布・Bark通知・実機installまで確認する。
 - 元環境のconfig/秘密情報を流用せず、別設定の新しい環境で同じ手順を実行する。
 
-現在はローカル検証段階。Cloudflare配備、3クライアントのOAuth、mini常駐runner、無人署名、別環境での構築は未確認。既存installサービスのリソースはまだ移管せず、運用切替時にdotfilesからstateを移す。両方から同じAccessリソースを管理しない。
+Managed OAuthとD1はIaCで配備済み。3クライアントのOAuth、mini常駐runner、無人署名、別環境での構築は未確認。既存の配布サービスを併用する場合は `manage_distribution=false` とし、既存の配布audience/bucketを設定する。既存installサービスのリソースはまだ移管せず、運用切替時にdotfilesからstateを移す。両方から同じAccessリソースを管理しない。
 
 ## ライセンスと参照
 

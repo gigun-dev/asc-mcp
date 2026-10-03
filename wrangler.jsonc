@@ -1,5 +1,5 @@
 {
-  "name": "ios-build-mcp",
+  "name": "asc-mcp-mcp",
   "main": "src/worker.mjs",
   "compatibility_date": "2026-10-03",
   "workers_dev": false,
@@ -13,7 +13,7 @@
   "d1_databases": [
     {
       "binding": "JOBS",
-      "database_name": "ios-build-jobs",
+      "database_name": "asc-mcp-jobs",
       "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "migrations"
     }
