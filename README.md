@@ -18,7 +18,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 
 - Cloudflareアカウントとドメイン、GitHub App、非公開の制御repo。
 - Xcodeが対象アプリに対応するMac、署名可能なApple Developer Programのアカウント・登録端末。
-- ASC **5.9.2**、Node **24**、npm、Python 3、OpenTofu **1.12.6**。Bark暗号化通知を使う場合はage・openssl。
+- ASC **5.9.2**、XcodeGen（project.ymlでprojectを生成するアプリ）、Node **24**、npm、Python 3、OpenTofu **1.12.6**。Bark暗号化通知を使う場合はage・openssl。
 - Mac runnerは専用ユーザー・専用キーチェーンを推奨。XcodeのRun Scriptもコードとして実行されるため、作者を許可しただけでコード隔離が保証されるわけではない。
 
 ## 初期構築

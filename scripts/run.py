@@ -36,6 +36,8 @@ def main():
         archive=root/'app.xcarchive';ipa=root/'app.ipa'
         build_env=os.environ.copy()
         for name in ['SOURCE_TOKEN','CLOUDFLARE_API_TOKEN','GITHUB_TOKEN','BARK_IDENTITY','BARK_ENV_FILE']:build_env.pop(name,None)
+        if not (checkout/cfg['project']).exists() and (checkout/'project.yml').is_file():
+            run(['xcodegen','generate','--spec','project.yml'],checkout,build_env)
         run(['asc','xcode','archive','--project',cfg['project'],'--scheme',cfg['scheme'],'--archive-path',str(archive),'--xcodebuild-flag=-destination','--xcodebuild-flag=generic/platform=iOS','--xcodebuild-flag','CURRENT_PROJECT_VERSION='+str(os.environ.get('GITHUB_RUN_NUMBER','1')),'--output','json'],checkout,build_env)
         run(['asc','xcode','export','--archive-path',str(archive),'--ipa-path',str(ipa),'--method','release-testing','--team-id',cfg['teamId'],'--output','json'],checkout,build_env)
         # ASC validates the profile and nested code before the accepted publisher changes latest.json.
