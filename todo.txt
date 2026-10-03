@@ -1,3 +1,3 @@
-2026-10-04 Managed OAuth・D1・Workerを配備済み、3クライアントの認証後MCP通信を確認する +acceptance @wip id:0002
-2026-10-04 GitHub App登録済み、mini runnerで無人署名・実ビルド・配布・Bark通知を確認する +acceptance id:0003 @wip
-2026-10-04 ASC distributeと既存の固定配布ページの互換性を実証し重複処理を削る +distribution id:0004
+2026-10-04 Codex OAuth・本番MCPのツール一覧とlist_appsを検証済み、ChatGPT・Claudeの接続を確認する +acceptance @user id:0002
+2026-10-04 GUIセッションの署名成功を確認しrunnerのSessionCreateを修正、実ビルド・配布・Barkを再検証する +acceptance @wip id:0003
+2026-10-04 ASC distributeと既存の固定配布ページの互換性を実証し重複処理を削る +distribution dep:0003 id:0004

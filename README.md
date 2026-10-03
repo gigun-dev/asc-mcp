@@ -18,7 +18,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 
 - Cloudflareアカウントとドメイン、GitHub App、非公開の制御repo。
 - Xcodeが対象アプリに対応するMac、署名可能なApple Developer Programのアカウント・登録端末。
-- ASC **5.9.2**、XcodeGen（project.ymlでprojectを生成するアプリ）、Node **24**、npm、Python 3、OpenTofu **1.12.6**。Bark暗号化通知を使う場合はage・openssl。
+- ASC **5.9.2**、XcodeGen（project.ymlでprojectを生成するアプリ）、Node **24**、npm、Python 3、OpenTofu **1.12.6**。Bark暗号化通知にはopenssl、age暗号化ファイルから読む場合はageも必要。
 - Mac runnerは専用ユーザー・専用キーチェーンを推奨。XcodeのRun Scriptもコードとして実行されるため、作者を許可しただけでコード隔離が保証されるわけではない。
 
 ## 初期構築
@@ -30,7 +30,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 5. [GitHub App設定手順](docs/github-app.md)に沿ってAppを登録し、対象repoだけへinstall。制御repoのActions read/write、アプリrepoのContents read / Pull requests readを付与。App ID・installation ID・PKCS#8 PEM秘密鍵をMCP Workerの `GITHUB_APP_ID` / `GITHUB_INSTALLATION_ID` / `GITHUB_APP_PRIVATE_KEY` secretsへ設定する。Apple用APIキーは今回不要。
 6. `npx wrangler d1 migrations apply asc-mcp-jobs --remote --config wrangler.production.json`、`npx wrangler deploy --config wrangler.production.json`。
 7. 配布Workerへ `DOWNLOAD_SECRET`（ランダム値）を設定し、`npx wrangler deploy --config distribution/wrangler.production.json`。署名検証を配備する前にdownloadパスのAccess例外を利用しない。
-8. **非公開**制御repoを作り、`.github/workflows/build.yml`だけを配置する。varsの `SERVICE_REPOSITORY` に本サービスrepo、`SERVICE_REVISION` に検証済み40桁commit SHAを設定する。ビルドロジックはこの固定版をcheckoutし、制御repoへ複製しない。公開repoの外部PRからrunnerを動かさない。miniへGitHub公式runnerを登録して `asc-mcp` labelを付ける。ASC・Xcode・署名をrunnerの実行ユーザーで `asc xcode doctor` と実archive/exportで確認する。SSH/GUIで署名結果が異なる場合はここで解決する。
+8. **非公開**制御repoを作り、`.github/workflows/build.yml`だけを配置する。varsの `SERVICE_REPOSITORY` に本サービスrepo、`SERVICE_REVISION` に検証済み40桁commit SHAを設定する。ビルドロジックはこの固定版をcheckoutし、制御repoへ複製しない。公開repoの外部PRからrunnerを動かさない。MacへGitHub公式runnerを登録して `asc-mcp` labelを付ける。GUIのloginキーチェーンを使う場合は `svc.sh install` 後、停止中に `python3 scripts/configure-runner-keychain.py /PATH/TO/RUNNER` を実行してから `svc.sh start`。公式LaunchAgentの独立security sessionを作らず、ログイン中のGUIセッションを利用する。再起動後はGUIログインとキーチェーン解除が必要で、常時無人運用用の専用キーチェーンとは別の方式。ASC・Xcode・署名をrunnerの実行ユーザーで `asc xcode doctor` と実archive/exportで確認する。
 9. 制御repoのvarsに `PROJECTS_JSON`（configのprojects部分）、`CLOUDFLARE_ACCOUNT_ID`、`OTA_PUBLIC_ORIGIN`、`OTA_R2_BUCKET`を設定。配布用Wrangler設定はworkflowがvarsから生成する。secretsのCloudflare tokenはR2対象bucketへの書込だけに限定。privateアプリrepo取得用 `SOURCE_TOKEN` はContents readへ限定する。実行時の短命GitHub App tokenを使う形への移行は運用受け入れで確認する。
 10. Bark利用時は既存の通知設定を `BARK_ENV` secretへ登録するか、runnerのage暗号化設定ファイルを `BARK_ENV_FILE` varで指定する。通知設定をXcodeプロセスへ渡さない。秘密情報をworkflowやログへ貼らない。
 11. ChatGPT / Claude / Codexへ `https://YOUR_MCP_HOST/mcp` を追加しAccessログイン。Managed OAuthの許可callback URIは使うクライアントの実値だけを登録する。
@@ -46,7 +46,9 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 - 成功時にIPA検証・配布・Bark通知・実機installまで確認する。
 - 元環境のconfig/秘密情報を流用せず、別設定の新しい環境で同じ手順を実行する。
 
-Managed OAuthとD1はIaCで配備済み。3クライアントのOAuth、mini常駐runner、無人署名、別環境での構築は未確認。既存の配布サービスを併用する場合は `manage_distribution=false` とし、既存の配布audience/bucketを設定する。既存installサービスのリソースはまだ移管せず、運用切替時にdotfilesからstateを移す。両方から同じAccessリソースを管理しない。
+Managed OAuth・D1・Workerは配備済み。CodexのOAuthログインと、実際の認証付きMCP通信（initialize・tools/list・list_apps）を確認した。miniの常駐runnerでプロジェクト生成・コンパイルまで通ったが、署名は `errSecInternalComponent` で失敗した。GUIセッションではキーチェーンが解除され小さなバイナリの署名も成功したため、runnerの `SessionCreate` を無効にして実ビルドを再検証する。ChatGPT・Claudeの接続、runnerからの署名・配布・通知、別環境での構築は未確認。
+
+既存の配布サービスを併用する場合は `manage_distribution=false` とし、既存の配布audience/bucketを設定する。既存installサービスのリソースはまだ移管せず、運用切替時にdotfilesからstateを移す。両方から同じAccessリソースを管理しない。ASC distribute publishはS3互換ストレージへの配布物と期限付きリンクを提供するが、現在のAccess付き固定ページ・Bark通知は別途必要。
 
 ## ライセンスと参照
 
