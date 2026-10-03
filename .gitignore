@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.wrangler/
+config.local.json
+wrangler.production.json
+infra/*.tfstate*
+infra/*.tfplan
+infra/*.tfvars
+infra/.terraform/
+.env*
+!.env.example
+__pycache__/
+projects.json
+distribution/wrangler.production.json

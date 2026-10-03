@@ -1,0 +1,45 @@
+name: Private iOS build
+run-name: ios-build ${{ inputs.job_id }}
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        required: true
+        type: string
+      project:
+        required: true
+        type: string
+      commit:
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  build:
+    # Publish the template publicly, but execute it only in your private control repo.
+    if: github.event.repository.private
+    runs-on: [self-hosted, macOS, ios-build]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          repository: ${{ vars.SERVICE_REPOSITORY }}
+          ref: ${{ vars.SERVICE_REVISION }}
+          persist-credentials: false
+      - run: npm ci
+      - name: Build, verify and publish
+        env:
+          JOB_ID: ${{ inputs.job_id }}
+          PROJECT: ${{ inputs.project }}
+          SOURCE_SHA: ${{ inputs.commit }}
+          PROJECTS_JSON: ${{ vars.PROJECTS_JSON }}
+          SOURCE_TOKEN: ${{ secrets.SOURCE_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          OTA_PUBLIC_ORIGIN: ${{ vars.OTA_PUBLIC_ORIGIN }}
+          OTA_R2_BUCKET: ${{ vars.OTA_R2_BUCKET }}
+          BARK_ENV_FILE: ${{ vars.BARK_ENV_FILE }}
+        run: |
+          printf '%s' "$PROJECTS_JSON" > projects.json
+          node scripts/runner-config.mjs
+          python3 scripts/run.py "$PROJECT" "$SOURCE_SHA" "$JOB_ID"

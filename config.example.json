@@ -1,0 +1,23 @@
+{
+  "accountId": "YOUR_CLOUDFLARE_ACCOUNT_ID",
+  "mcpOrigin": "https://build.example.com",
+  "installOrigin": "https://install.example.com",
+  "accessIssuer": "https://YOUR_TEAM.cloudflareaccess.com",
+  "accessAudience": "FROM_TOFU_OUTPUT",
+  "databaseId": "FROM_TOFU_OUTPUT",
+  "controlRepository": "YOUR_OWNER/private-build-control",
+  "projects": {
+    "my-app": {
+      "repository": "YOUR_OWNER/my-app",
+      "trustedRef": "main",
+      "trustedAuthors": [
+        "YOUR_GITHUB_LOGIN"
+      ],
+      "project": "MyApp.xcodeproj",
+      "scheme": "MyApp",
+      "teamId": "YOUR_APPLE_TEAM"
+    }
+  },
+  "installAudience": "FROM_TOFU_INSTALL_AUDIENCE",
+  "artifactBucket": "ios-build-artifacts"
+}

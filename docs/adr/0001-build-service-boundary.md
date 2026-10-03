@@ -1,0 +1,11 @@
+# ASCを実行部、MCPをクラウドからの入口にする
+
+Date: 2026-10-04
+
+別設定・新しい環境でも構築できる公開コードとして管理する。WorkerはAccess Managed OAuthで認証し、登録済みプロジェクトの固定workflowを呼ぶ。MacのXcode・署名情報をクラウドへ移さない。
+
+実行は非公開制御repoのGitHub Actionsに委ねる。公開repoからself-hosted runnerを自動実行せず、信頼する作者の同repo PRまたは信頼ブランチ上のcommitのみを受け付ける。ビルドスクリプトも任意コードなので、信頼するコードだけを署名環境で実行する。
+
+サービス専用IaCは本repo、ホスト設定はdotfiles、通知は既存Bark経路、MCP接続と使い方はclaude-code plugin。ASCは作者のpluginを利用し、こちらへ説明を複製しない。
+
+現行配布形式との互換性を証明するまで配布コードの切替はしない。既存Cloudflareリソースの所有権移動はstateを移し二重管理しない。

@@ -1,0 +1,28 @@
+{
+  "name": "ios-build-mcp",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-10-03",
+  "workers_dev": false,
+  "preview_urls": false,
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  },
+  "d1_databases": [
+    {
+      "binding": "JOBS",
+      "database_name": "ios-build-jobs",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "vars": {
+    "ACCESS_ISSUER": "https://example.cloudflareaccess.com",
+    "ACCESS_AUD": "configure-before-deploy",
+    "CONTROL_REPOSITORY": "example/private-build-control",
+    "PROJECTS_JSON": "{}",
+    "PUBLIC_ORIGIN": "https://install.example.com"
+  }
+}
