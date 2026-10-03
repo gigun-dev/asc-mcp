@@ -14,8 +14,10 @@ def command(args,**kwargs):
 
 def notify(info,url):
     secret_path=os.environ.get('BARK_ENV_FILE')
-    if not secret_path:return
-    raw=command(['age','-d','-i',(os.environ.get('BARK_IDENTITY') or str(Path.home()/'.ssh/id_ed25519')),secret_path]).decode()
+    raw=os.environ.get('BARK_ENV')
+    if not raw and secret_path:
+        raw=command(['age','-d','-i',(os.environ.get('BARK_IDENTITY') or str(Path.home()/'.ssh/id_ed25519')),secret_path]).decode()
+    if not raw:return
     secrets=dict(line.split('=',1) for line in raw.splitlines() if '=' in line and not line.startswith('#'))
     key,iv=secrets['BARK_ENCRYPT_KEY'],secrets['BARK_ENCRYPT_IV']
     route=secrets.get('BARK_PUSH_URL') or 'https://api.day.app/'+secrets['BARK_DEVICE_KEY']

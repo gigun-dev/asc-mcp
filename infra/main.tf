@@ -17,6 +17,7 @@ variable "resource_prefix" {
 resource "cloudflare_d1_database" "jobs" {
   account_id = var.account_id
   name       = "${var.resource_prefix}-jobs"
+  read_replication = { mode = "disabled" }
 }
 variable "manage_distribution" {
   type    = bool
@@ -31,7 +32,6 @@ resource "cloudflare_zero_trust_access_application" "mcp" {
   account_id   = var.account_id
   name         = "${var.resource_prefix} MCP"
   type         = "mcp"
-  domain       = var.mcp_hostname
   destinations = [{ type = "public", uri = var.mcp_hostname }]
   oauth_configuration = {
     enabled = true
@@ -50,7 +50,6 @@ resource "cloudflare_zero_trust_access_application" "install" {
   account_id           = var.account_id
   name                 = "${var.resource_prefix} installs"
   type                 = "self_hosted"
-  domain               = var.install_hostname
   destinations         = [{ type = "public", uri = var.install_hostname }]
   app_launcher_visible = true
   policies             = [{ name = "Install owners", decision = "allow", precedence = 1, include = [for email in var.allowed_emails : { email = { email = email } }] }]
@@ -60,7 +59,6 @@ resource "cloudflare_zero_trust_access_application" "download" {
   account_id           = var.account_id
   name                 = "${var.resource_prefix} signed downloads"
   type                 = "self_hosted"
-  domain               = "${var.install_hostname}/download/*"
   destinations         = [{ type = "public", uri = "${var.install_hostname}/download/*" }]
   app_launcher_visible = false
   # Deploy Worker signature verification before enabling this path exception.

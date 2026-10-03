@@ -38,6 +38,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           OTA_PUBLIC_ORIGIN: ${{ vars.OTA_PUBLIC_ORIGIN }}
           OTA_R2_BUCKET: ${{ vars.OTA_R2_BUCKET }}
+          BARK_ENV: ${{ secrets.BARK_ENV }}
           BARK_ENV_FILE: ${{ vars.BARK_ENV_FILE }}
         run: |
           printf '%s' "$PROJECTS_JSON" > projects.json

@@ -32,7 +32,7 @@ MCP client → Cloudflare Access Managed OAuth → Workers MCP → GitHub Action
 7. 配布Workerへ `DOWNLOAD_SECRET`（ランダム値）を設定し、`npx wrangler deploy --config distribution/wrangler.production.json`。署名検証を配備する前にdownloadパスのAccess例外を利用しない。
 8. **非公開**制御repoを作り、`.github/workflows/build.yml`だけを配置する。varsの `SERVICE_REPOSITORY` に本サービスrepo、`SERVICE_REVISION` に検証済み40桁commit SHAを設定する。ビルドロジックはこの固定版をcheckoutし、制御repoへ複製しない。公開repoの外部PRからrunnerを動かさない。miniへGitHub公式runnerを登録して `asc-mcp` labelを付ける。ASC・Xcode・署名をrunnerの実行ユーザーで `asc xcode doctor` と実archive/exportで確認する。SSH/GUIで署名結果が異なる場合はここで解決する。
 9. 制御repoのvarsに `PROJECTS_JSON`（configのprojects部分）、`CLOUDFLARE_ACCOUNT_ID`、`OTA_PUBLIC_ORIGIN`、`OTA_R2_BUCKET`を設定。配布用Wrangler設定はworkflowがvarsから生成する。secretsのCloudflare tokenはR2対象bucketへの書込だけに限定。privateアプリrepo取得用 `SOURCE_TOKEN` はContents readへ限定する。実行時の短命GitHub App tokenを使う形への移行は運用受け入れで確認する。
-10. Bark利用時はrunnerの既存暗号化設定ファイルを `BARK_ENV_FILE` varで指定する。秘密情報をworkflowやログへ貼らない。
+10. Bark利用時は既存の通知設定を `BARK_ENV` secretへ登録するか、runnerのage暗号化設定ファイルを `BARK_ENV_FILE` varで指定する。通知設定をXcodeプロセスへ渡さない。秘密情報をworkflowやログへ貼らない。
 11. ChatGPT / Claude / Codexへ `https://YOUR_MCP_HOST/mcp` を追加しAccessログイン。Managed OAuthの許可callback URIは使うクライアントの実値だけを登録する。
 
 アプリ追加はconfigのprojectsにrepo・scheme・project・teamId・trustedAuthorsを追加し、Worker設定とrunner側設定の両方へ反映する。`commit`はtrustedRefの履歴上の40桁SHAのみ。未merge変更は同repo・許可作者・open PRだけを受付時のhead SHAへ固定する。
