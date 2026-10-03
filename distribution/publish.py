@@ -6,9 +6,10 @@ from pathlib import Path
 
 HERE=Path(__file__).resolve().parent
 
-def command(args,**kwargs):
+def command(args,report_error=False,**kwargs):
     result=subprocess.run(args,cwd=HERE,capture_output=True,**kwargs)
     if result.returncode:
+        if report_error:sys.stderr.buffer.write(result.stderr)
         raise RuntimeError(f'{args[0]} failed (exit {result.returncode})')
     return result.stdout
 
@@ -48,7 +49,7 @@ def publish():
             p=plistlib.loads(z.read(path));info['version']=str(p['CFBundleVersion']);info['bundleId']=p['CFBundleIdentifier']
     bucket=os.environ.get('OTA_R2_BUCKET','ota-distribution')
     def upload(path,key):
-        command(['bunx','--no-install','wrangler','--config',os.environ['OTA_WRANGLER_CONFIG'],'r2','object','put',f'{bucket}/{key}','--file',str(path),'--remote'])
+        command(['node',str(HERE/'upload.mjs'),str(path),bucket,key],report_error=True)
     prefix=f'{slug}/releases/{release}'
     for name in files:upload(public/name,f'{prefix}/{name}')
     with tempfile.TemporaryDirectory(prefix='ota-release-') as tmp:

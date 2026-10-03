@@ -9,6 +9,7 @@
     "test:python": "python3 -m unittest discover -s tests -p '*_test.py' && python3 distribution/publish.test.py"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "3.1146.0",
     "@hono/mcp": "0.3.2",
     "@modelcontextprotocol/sdk": "1.32.0",
     "hono": "4.13.12",

@@ -44,6 +44,6 @@ def main():
         run(['asc','distribute','prepare','--ipa',str(ipa),'--output-dir',str(root/'verified'),'--source-revision',sha,'--channel',project,'--output','json'],checkout,build_env)
         public=root/'public';public.mkdir();ipa.rename(public/'app.ipa')
         publish_env=os.environ.copy()
-        publish_env.update(APP_SLUG=project,APP_NAME=cfg.get('name',project),BUILT='ios',BUILD=os.environ.get('GITHUB_RUN_NUMBER','1'),OTA_MESSAGE='Source '+sha,OTA_WRANGLER_CONFIG=str(service/'distribution/wrangler.production.json'))
+        publish_env.update(APP_SLUG=project,APP_NAME=cfg.get('name',project),BUILT='ios',BUILD=os.environ.get('GITHUB_RUN_NUMBER','1'),OTA_MESSAGE='Source '+sha)
         run([sys.executable,str(service/'distribution/publish.py'),str(public)],service,publish_env)
 if __name__=='__main__':main()

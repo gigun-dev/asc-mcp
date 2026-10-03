@@ -10,7 +10,7 @@ class Publication(unittest.TestCase):
    calls=[]
    with patch.dict(os.environ,env),patch('sys.argv',['publish',tmp]),patch.object(module,'command',side_effect=lambda args,**kwargs:calls.append(args)),patch.object(module,'notify'):
     module.publish()
-   self.assertEqual(len(calls),3);self.assertTrue(calls[-1][8].endswith('/latest.json'))
+   self.assertEqual(len(calls),3);self.assertTrue(calls[-1][4].endswith('/latest.json'))
    self.assertFalse(any('/app.ipa' in ' '.join(a) for a in calls))
  def test_upload_failure_never_updates_latest_or_notifies(self):
   with tempfile.TemporaryDirectory() as tmp:
