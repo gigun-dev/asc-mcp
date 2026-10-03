@@ -12,3 +12,5 @@ infra/.terraform/
 __pycache__/
 projects.json
 distribution/wrangler.production.json
+!infra/example.tfvars
+*.pem
