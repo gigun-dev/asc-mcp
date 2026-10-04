@@ -1,4 +1,4 @@
 2026-10-04 クラウドセッションからビルドを依頼できるようChatGPT・ClaudeでOAuth接続とlist_apps/get_buildを検証する（Codexと本番build_appは成功済み、ログイン操作だけ本人協力） +acceptance @unattended id:0002
 2026-10-04 MCP経由の署名・R2配布・Bark受付が成功、今回の通知受信とiPhoneインストールを本人確認する +acceptance @user id:0003
 2026-10-04 別環境へ移せることを確認するためクリーンcheckoutと別設定でIaC・登録プロジェクト・runner・OAuth・署名からMCP経由の配布まで再構築して検証する（まず設定と配置を検証、環境固有の認証操作は本人協力） +reproducibility @unattended id:0005
-(B) 2026-10-05 Xcodeの保存アカウントが空になった契機を調査し再起動後の保持とCLI署名の再発防止を確認する +distribution @unattended id:0008
+(B) 2026-10-05 Xcode再ログイン後の保存1件とCLI配布成功は確認済み。次のXcode再起動後も保持・exportできるか確認する（02:44のAccountStore接続失効は観測、保存情報消失との因果は未確定） +distribution @user see:docs/verification/2026-10-05-xcode-account-persistence.json id:0008

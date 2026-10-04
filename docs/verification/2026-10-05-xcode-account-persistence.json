@@ -1,0 +1,28 @@
+{
+  "host": "mini",
+  "accountState": {
+    "beforeReauthentication": 0,
+    "afterReauthentication": 1,
+    "latestPreferenceWrite": "2026-10-05T07:00:05+09:00",
+    "owner": "gigun",
+    "mode": "0600"
+  },
+  "successfulBuildJob": "0aa33eb5-cad4-4a4c-ab42-136ce9266329",
+  "logWindow": {
+    "from": "2026-10-05T02:35:00+09:00",
+    "to": "2026-10-05T02:50:00+09:00",
+    "xcodeAccountRecords": 3,
+    "accountStoreRequest": "2026-10-05T02:44:40.648642+09:00",
+    "accountStoreConnectionInvalidated": "2026-10-05T02:45:10.648872+09:00"
+  },
+  "findings": [
+    "Persisted account exists after reauthentication and successful CLI export",
+    "No Xcode preference reset found in dotfiles or asc-mcp source",
+    "AccountStore connection invalidation does not prove the account deletion cause"
+  ],
+  "remaining": [
+    "Verify persisted account and CLI export after next Xcode restart",
+    "Deletion trigger remains unknown; no causal record found in inspected window"
+  ],
+  "boundary": "No certificate revocation, account deletion, credential backup or Mac restart performed"
+}
