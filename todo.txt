@@ -1,3 +1,3 @@
-2026-10-04 Codex OAuth・本番MCPのツール一覧とlist_appsを検証済み、ChatGPT・Claudeの接続を確認する +acceptance @user id:0002
+2026-10-04 クラウドセッションからビルドを依頼できるようChatGPT・ClaudeでOAuth接続とlist_apps/get_buildを検証する（Codexと本番build_appは成功済み、ログイン操作だけ本人協力） +acceptance @unattended id:0002
 2026-10-04 MCP経由の署名・R2配布・Bark受付が成功、今回の通知受信とiPhoneインストールを本人確認する +acceptance @user id:0003
-2026-10-04 元環境の秘密情報を流用せず、別設定の環境で構築からMCP経由の配布まで再現する +reproducibility @environment id:0005
+2026-10-04 新環境へ移せることを確認するためクリーンなcheckoutと別設定でIaC・登録プロジェクト・runner配置を検証し残るApple署名とGitHub/Cloudflare接続を明示する +reproducibility @unattended id:0005
