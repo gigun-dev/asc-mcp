@@ -39,7 +39,7 @@ def main():
         if not (checkout/cfg['project']).exists() and (checkout/'project.yml').is_file():
             run(['xcodegen','generate','--spec','project.yml'],checkout,build_env)
         run(['asc','xcode','archive','--project',cfg['project'],'--scheme',cfg['scheme'],'--archive-path',str(archive),'--xcodebuild-flag=-destination','--xcodebuild-flag=generic/platform=iOS','--xcodebuild-flag','CURRENT_PROJECT_VERSION='+str(os.environ.get('GITHUB_RUN_NUMBER','1')),'--output','json'],checkout,build_env)
-        run(['asc','xcode','export','--archive-path',str(archive),'--ipa-path',str(ipa),'--method','release-testing','--team-id',cfg['teamId'],'--output','json'],checkout,build_env)
+        run(['asc','xcode','export','--archive-path',str(archive),'--ipa-path',str(ipa),'--method','release-testing','--team-id',cfg['teamId'],'--xcodebuild-flag=-allowProvisioningUpdates','--output','json'],checkout,build_env)
         # ASC validates the profile and nested code before the accepted publisher changes latest.json.
         run(['asc','distribute','prepare','--ipa',str(ipa),'--output-dir',str(root/'verified'),'--source-revision',sha,'--channel',project,'--output','json'],checkout,build_env)
         public=root/'public';public.mkdir();ipa.rename(public/'app.ipa')
