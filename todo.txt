@@ -1,4 +1,4 @@
 2026-10-04 クラウドセッションからビルドを依頼できるようChatGPT・ClaudeでOAuth接続とlist_apps/get_buildを検証する（Codexと本番build_appは成功済み、ログイン操作だけ本人協力） +acceptance @unattended id:0002
 2026-10-04 MCP経由の署名・R2配布・Bark受付が成功、今回の通知受信とiPhoneインストールを本人確認する +acceptance @user id:0003
 2026-10-04 別環境へ移せることを確認するためクリーンcheckoutと別設定でIaC・登録プロジェクト・runner・OAuth・署名からMCP経由の配布まで再構築して検証する（まず設定と配置を検証、環境固有の認証操作は本人協力） +reproducibility @unattended id:0005
-(A) 2026-10-05 クラウド署名通信指定は修正し本番runnerへ反映済み、Mac miniのNo Accountsを本人ログインで解消して新版の署名・公開を再検証する +distribution @user id:0007
+(A) 2026-10-05 GUI正常の本人確認を前提にrunnerのNo AccountsとXcode認証情報読取の差を切り分け、Ad Hoc署名・新版公開を検証する +distribution @unattended id:0007
