@@ -1,3 +1,4 @@
 x 2026-10-04 2026-10-04 新しい環境で設定を差し替えて構築できるasc-mcpのMCP・IaC・ビルド手順を実装し、失敗経路とローカルMCP通信を検証する +service id:0001
 x 2026-10-04 2026-10-04 ASC prepareの署名検証と固定Accessページの互換性を実ビルドで確認し、不要なWrangler配布設定生成を削除する +distribution id:0004
 x 2026-10-04 2026-10-04 完了記録・現行コードと残件を照合し重複と古い前提を除き検証担当を整理する +governance @unattended id:0006
+x 2026-10-05 2026-10-05 Xcode再ログイン後にMac miniのMCPビルドでAd Hoc署名・ASC検証・固定URL公開が成功し新版配布を復旧した +distribution @unattended id:0007
