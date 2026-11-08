@@ -45,8 +45,8 @@ extensionなし、未署名状態を確認し、source SHAとarchive digestを�
 
 `project.yml`のTeamは既存検証用の`KK42DL23GH`であり、このファイルが署名利用を認可する
 わけではない。既存の`dev.gigun.mcphost`用Ad Hoc profileはこのbundle IDと一致しない。
-対象iPhone、Team、certificate、期限、entitlement、アプリIDが一致する資材でASCのplanを
-作り、その効果をレビューする。Development wildcard profileをAd Hoc用に代用しない。
+対象iPhone、Team、certificate、期限、entitlement、アプリIDが一致する資材で標準signing runによるmanual exportを行い、
+標準prepareでIPAを検証する。Development wildcard profileをAd Hoc用に代用しない。
 
 未署名archiveの構造検査や合成テストの成功から、署名可能・配布可能・iPhone起動成功とは
 判定しない。工程と実行主体、残る依存はrepoの`docs/ad-hoc-delivery.md`を参照する。

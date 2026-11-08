@@ -4,7 +4,7 @@ import json,os,re,subprocess,sys,tempfile
 from pathlib import Path
 
 def run(argv, cwd, env=None):
-    subprocess.run(argv,cwd=cwd,env=env,check=True)
+    subprocess.run(argv,cwd=cwd,env=child_env('build') if env is None else env,check=True)
 
 def settings(path,project,sha,job):
     if not re.fullmatch(r"[a-f0-9]{40}",sha):raise ValueError("Expected full commit SHA")
@@ -17,6 +17,17 @@ def settings(path,project,sha,job):
     if Path(value['project']).is_absolute() or '..' in Path(value['project']).parts:raise ValueError("Project path must stay inside checkout")
     return value
 
+# This limits inherited environment data, not same-UID filesystem/keychain access.
+BASE_ENV = frozenset(('HOME', 'PATH', 'USER', 'LOGNAME', 'TMPDIR', 'LANG', 'LC_ALL', 'DEVELOPER_DIR'))
+PUBLISH_ENV = frozenset(('CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN',
+    'R2_ACCESS_KEY_ID', 'OTA_PUBLIC_ORIGIN', 'OTA_R2_BUCKET',
+    'BARK_ENV', 'BARK_ENV_FILE', 'BARK_IDENTITY'))
+
+def child_env(phase, environ=None):
+    source = os.environ if environ is None else environ
+    allowed = BASE_ENV | (PUBLISH_ENV if phase == 'publish' else frozenset())
+    return {name: value for name, value in source.items() if name in allowed}
+
 def main():
     project,sha,job=sys.argv[1:4]
     cfg=settings(os.environ.get('PROJECTS_FILE','projects.json'),project,sha,job)
@@ -24,18 +35,18 @@ def main():
     with tempfile.TemporaryDirectory(prefix='asc-mcp-') as tmp:
         root=Path(tmp);checkout=root/'source';checkout.mkdir()
         # The credential is provided via the process environment, never a remote URL or argv.
-        env=os.environ.copy()
-        if env.get('SOURCE_TOKEN'):
+        env=child_env('source')
+        if os.environ.get('SOURCE_TOKEN'):
+            env['SOURCE_TOKEN']=os.environ['SOURCE_TOKEN']
             helper=root/'askpass';helper.write_text('#!/bin/sh\ncase "$1" in *Username*) printf "%s" "x-access-token";; *) printf "%s" "$SOURCE_TOKEN";; esac\n');helper.chmod(0o700)
             env.update(GIT_ASKPASS=str(helper),GIT_TERMINAL_PROMPT='0')
         run(['git','init','-q'],checkout)
         run(['git','remote','add','origin','https://github.com/'+cfg['repository']+'.git'],checkout)
         run(['git','fetch','--depth=1','origin',sha],checkout,env)
-        run(['git','checkout','--detach','FETCH_HEAD'],checkout)
-        if subprocess.check_output(['git','rev-parse','HEAD'],cwd=checkout,text=True).strip()!=sha:raise RuntimeError('Source revision mismatch')
+        run(['git','checkout','--detach','FETCH_HEAD'],checkout,child_env('source'))
+        if subprocess.check_output(['git','rev-parse','HEAD'],cwd=checkout,text=True,env=child_env('source')).strip()!=sha:raise RuntimeError('Source revision mismatch')
         archive=root/'app.xcarchive';ipa=root/'app.ipa'
-        build_env=os.environ.copy()
-        for name in ['SOURCE_TOKEN','CLOUDFLARE_API_TOKEN','GITHUB_TOKEN','BARK_IDENTITY','BARK_ENV_FILE','BARK_ENV']:build_env.pop(name,None)
+        build_env=child_env('build')
         if not (checkout/cfg['project']).exists() and (checkout/'project.yml').is_file():
             run(['xcodegen','generate','--spec','project.yml'],checkout,build_env)
         run(['asc','xcode','archive','--project',cfg['project'],'--scheme',cfg['scheme'],'--archive-path',str(archive),'--xcodebuild-flag=-destination','--xcodebuild-flag=generic/platform=iOS','--xcodebuild-flag','CURRENT_PROJECT_VERSION='+str(os.environ.get('GITHUB_RUN_NUMBER','1')),'--output','json'],checkout,build_env)
@@ -43,7 +54,7 @@ def main():
         # ASC validates the profile and nested code before the accepted publisher changes latest.json.
         run(['asc','distribute','prepare','--ipa',str(ipa),'--output-dir',str(root/'verified'),'--source-revision',sha,'--channel',project,'--output','json'],checkout,build_env)
         public=root/'public';public.mkdir();ipa.rename(public/'app.ipa')
-        publish_env=os.environ.copy()
+        publish_env=child_env('publish')
         publish_env.update(APP_SLUG=project,APP_NAME=cfg.get('name',project),BUILT='ios',BUILD=os.environ.get('GITHUB_RUN_NUMBER','1'),OTA_MESSAGE='Source '+sha)
         run([sys.executable,str(service/'distribution/publish.py'),str(public)],service,publish_env)
 if __name__=='__main__':main()

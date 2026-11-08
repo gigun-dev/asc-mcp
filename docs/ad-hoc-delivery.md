@@ -1,22 +1,63 @@
 # iPhoneから依頼するAd Hoc OTA配布
 
-目標は、iPhoneから依頼し、miniでビルド・署名したアプリを通知リンクからインストール・起動すること。日常の実行にMacBookを必要としない。App Store提出・TestFlightは今回の対象外。
+iPhoneから依頼し、miniでビルド・署名したアプリを通知リンクからインストール・起動することを目指す。初回は拡張なしのMiniRouteTestで検証する。App Store提出・TestFlight、WidgetやWatchを含む複数ターゲットは対象外。
 
-## 証拠の現在地
+## 方針と実装の状態
 
-旧経路のarchive・Ad Hoc署名・R2配布・Bark受付成功は過去の記録として保持する。本人提示の現在地は、新しい権限分離方式で未署名Release archive、OTAと入力検証の合成テストまで成功。新方式の該当commit・実行ログは再開時に特定する。iPhoneへの実際のインストール・起動は未確認で、過去の成功から現在の署名資材やrunnerの稼働を推定しない。
+履歴ツールで読めた過去の委譲文は、本人が既存GitHub Actions → mini → ASC標準の署名・OTA経路を受理し、独自sudo・rolesや新Remote MCPは進めない方針だったと報告している。元の本人発言は取得できておらず、これは二次記録である。別ユーザーやrunnerの具体的な配置案を、本人承認済み・配置済みと扱わない。
 
-## 初回完走までの順序
+`scripts/ad_hoc.py`には標準ASCの段階実行を実装した。ローカルのDistribution PKCS#12、password file、対象アプリと端末に適合するAd Hoc profileを使う場合、Apple API認証を必須としない。
 
-1. miniのrunnerの実行ユーザー・起動方法・PATH・Xcodeを確認する。証明書と秘密鍵の対応、profile期限、Team・アプリID・対象iPhoneの登録を照合する。利用可能な資材、不足、本人操作が必要な箇所が明確になれば完了。
-2. build・sign・publishの実行主体、入力、権限、拒否条件、復旧方法を定義する。buildに署名鍵や配布資格情報を渡さず、signは検査済み成果物、publishは検証済みIPAだけを受け取る。同一ホスト・同一UIDで残るリスクを明記する。mini-vmとminiのgigun相互SSHも、この境界の前提に含める。
-3. 所有repoと固定commitを特定してMiniRouteTestをビルドする。archiveと署名資材を照合しAd Hoc exportする。アプリID・対象端末・期限・entitlement・署名の整合性を検証し、不一致を拒否できる、対象iPhone用IPAができれば完了。
-4. manifest・IPAの取得方法とアクセス制限を確認してR2配布・Bark通知を行う。本人がiPhoneでインストール承認と起動を行い、通知・インストール・起動・対象ビルドの一致を別々に確認する。
-5. 採用するエージェントからActions起動・結果取得を接続する。repo・commit・認証・重複実行・失敗通知を検証し、MacBookの操作なしでiPhoneの依頼から配布リンク取得まで完走すれば完了。
-6. miniのロック・再起動後のrunnerとKeychain、証明書期限切れ・認証失効・配布失敗の通知と復旧を検証する。Nix撤去前にrunnerのPATH依存を置換する。無人で動く範囲と本人操作の条件が明確で、再起動後も再実行できれば完了。
+- `export`はASC `signing run`内で固定のmanual `release-testing` exportを実行する。任意child、追加xcodebuild flag、automatic provisioning updateは受け付けない。
+- `prepare`は署名済みIPAをASC標準の検査に通してbundleを生成する。未署名IPAの`inspect`成功は配布可能という意味ではない。
+- `publish`はbundleのIPAをcredentialなしで再度prepareし、ASC標準publishによるdescriptorとpayloadの検証を経てprivateリンクを発行する。期限はページ24時間、manifestとIPAは追加猶予1時間。リンクは秘密として扱う。
 
-## 所有と後続
+ASCが一時Keychainとprofileを管理する。独自Keychain daemonやone-use protocol、成功時の証明書失効は追加しない。stdoutとstderrはcreate-onlyの0600ファイル、署名receipt・publish receipt・リンクは指定resultに隣接するファイルに保存する。publishのS3 credentialはpublish子processにだけ渡す。
 
-配布の進行と検証記録はasc-mcp、ホスト設定とTailscale・Nix撤去はdotfiles、呼び出し方はclaude-code plugin、アプリ固有のcommitと起動証拠はアプリrepoが持つ。MiniRouteTestの所有repoは未特定。現在のscripts/run.pyの同一job・同一UID実行を、新方式の隔離完了と扱わない。
+この段階実行は**既存Actionsの本番経路に接続されていない**。現行`scripts/run.py`は同一job・同一UIDでbuild/export/prepareを行い、既存publisherを呼ぶ経路であり、上記adapterそのものではない。子processへの環境変数を制限しても、同じUIDのhome・Keychain・他processは隔離されない。build主体から署名主体への検査済み成果物の受渡し、runner、資格情報供給、配置先と運用は未実装・未検証である。`asc-build`と`asc-sign`の存在だけでは分離の成立を証明しない。
 
-初回完走後に複数クライアント、Widget・Watch等の複数ターゲット、別環境での再構築を検討する。現在のGUI login Keychainに依存するrunnerを、そのまま再起動後も無人復帰できる構成と扱わない。
+標準private publishと既存Access固定ページ・Bark通知の互換性も未確認。実際のリンクartifactと通知payloadを検証してから接続する。通知受付、iPhoneへの表示、インストール、起動はそれぞれ別の結果として確認し、通知失敗だけで再署名しない。
+
+## 確認済みの証拠
+
+2026-11-09の読み取りでは、miniの公式runner `mini-asc-mcp`はonline/idle、`gigun` UID501のGUI LaunchAgentで`SessionCreate=false`だった。Xcode 26.3 (17C529)、ASC `/Users/gigun/.local/bin/asc` 5.17.1。runnerのPATHには`.local/bin`とNixのユーザープロファイルが含まれ、非対話SSHのPATHではascを解決できなかった。control repoの`SERVICE_REVISION`は`081b0641df043a5a2cf1ac75eb734ca5899f2855`、最新成功runは2026-10-04の`37238379770`。これらは現在の署名成功を示さない。
+
+同じGUI security sessionでのidentity列挙ではApple Development 1件、Distributionは見えなかった。SSHだけで得た0件を全sessionの不在と扱わない。読み取れたprofileはDevelopment 2件とMCPHost Ad Hoc 1件で、MiniRouteTestへの適合と本人のiPhoneとの一致は未確定。`asc --read-only auth doctor`はgigunにASC保存認証がないと報告したが、別ユーザーの状態は示さない。
+
+取り込みcommit `fc92004edf24f88fe124a8c7c71d51d558498a1c`のgit archiveをminiに展開し、tarのpax commitとSHA-256 `9ae824464b3751816e7b177549584c2f0c39733171204e60f64de11100120b7b`を照合した。Xcode 26.3 / SDK 26.2 / ASC 5.17.1で未署名Release archiveを1回作成した。`dev.gigun.miniroutetest`、1.0 build 1、arm64、単一app、extensionなしで、embedded profileと署名はない。archive digest（sorted相対path + NUL + file SHA256 + newline）は`de54d7fd0b53fcf86f9c6a55e11c4b809136a9207719fcdb63167b75c3e12a0c`、7 files。archiveはminiの`Library/Caches/asc-mcp-verification/fc92004edf24-bc153d39/`、private receiptとlogはローカルworkに保持する。信頼済みsourceをgigunで実行したsmokeであり、隔離builder・署名・配布・実機起動の受入結果ではない。
+
+XcodeGenは`USER`/`LOGNAME`を除いた環境で失敗し、実UIDから得た2値だけを戻す対照で成功した。共通の非秘密環境許可リストはその2値を含む。旧archiveの構造検査はpassedでも署名適格性は未評価。ASCの未署名IPA検査はprofile欠落・署名未検証を示した。
+
+今回の固定commitのarchiveから作った未署名IPAを新しい`ad_hoc.py prepare`へ渡す実走でも、embedded profile missingでexit 1となり、bundleは作られなかった。元archiveのdigestは前後で一致し、診断出力は0600だった。これは不適合の拒否確認であり、適合IPAでの署名・publish成功は未確認である。
+
+過去のarchive・Ad Hoc署名・R2配布・Bark受付成功は履歴として扱う。現在の署名資材、runner、iPhoneへのインストール・起動の証拠には使わない。旧候補の主要10ファイルは`work/mini-route-legacy/`に保全し、`preserved-hashes.json`でremote/local SHA-256を照合した。秘密資材やIPAは含めていない。
+
+## 署名資材の確認
+
+旧レビュー記載の`/Users/asc-sign/private-import/realbind-distribution.p12`と`/Users/asc-sign/Library/Keychains/mini-route-signing.keychain-db`は候補パスで、当時gigunからPermission deniedだったため存在・利用可能性は未確認。password fileの既存パスも確定していない。`/Users/asc-sign/signing`と`/Users/asc-sign/delivery`は過去の配置案であって、実在する資材の所在ではない。profileに含まれる公開証明書だけでは秘密鍵を使えると証明できない。
+
+所有者が対象ユーザー自身の環境で、読み取り専用inventoryを実行できる。出力先は既存ファイルを上書きせず0600で作成される。
+
+```sh
+python3 scripts/signing_inventory.py \
+  --asc /Users/gigun/.local/bin/asc \
+  --identity-path /Users/asc-sign/private-import/realbind-distribution.p12 \
+  --identity-path /Users/asc-sign/Library/Keychains/mini-route-signing.keychain-db \
+  --output /private/path/signing-inventory.json
+```
+
+実行するユーザーとsecurity sessionのidentity件数、候補パスの存在状態、ユーザーのprofileディレクトリにあるTeam・application identifier・期限・端末数を報告する。秘密鍵、password、端末UDIDを出力せず、importやアカウント変更も行わない。profileはmetadataの抽出のみで、trust・秘密鍵の対応・対象iPhoneの登録・署名可能性は判定しない。候補パスを指定しなければ任意の保護領域を探索しない。**asc-sign本人の環境ではまだ実行していない**。アクセス拒否は不在を意味しない。
+
+今回gigunのSSH contextでこのinventoryを実走し、profile 3件、旧P12候補は`inaccessible/EACCES`、identityは0件、出力0600を確認した。同じ出力先での再実行はEEXISTで拒否された。`sudo -n -l`もpassword requiredで、所有者の読み取り監査へ進むにはminiでの管理者認証が必要だった。ユーザーのshellを変更せず、所有者としてPythonを明示実行する方法を先に検討する。
+
+以前、asc-signのshellを`/usr/bin/false`から`/bin/zsh`へ変更する操作が限定承認されたと記録されているが、10月25日時点では管理者認証が必要で未実行だった。現在の状態を確認し、必要な本人操作を決める。既存のP12と適合profileを使えなければ、所有者と不足を確認して取得方法を決める。新しい証明書や認証を先に作らない。
+
+## 完走に残る作業
+
+1. 現在のrunner・実行ユーザー・security sessionと署名資材を確認し、証明書と秘密鍵、profileのTeam・App ID・期限・対象iPhoneの整合を確かめる。
+2. build・sign・publishのOS主体と権限、検査済みarchiveの受渡し、拒否条件と復旧方法を定めて配置する。同一UIDの工程分割を隔離と扱わない。
+3. 固定sourceから再現可能なarchiveを作り、既存の適合資材でexport・ASC prepare・private publishを検証する。Apple APIのplan/applyは別経路でありofflineではない。
+4. 実際のprivateリンクとBarkを接続し、本人のiPhoneでインストール・起動・ビルド一致を確認する。iPhoneからの依頼から結果取得まで検証する。
+5. miniのロック・再起動後のrunnerとKeychain、期限切れ・認証失効・配布失敗からの復旧を検証する。GUI login Keychainに依存する現runnerを無人復帰可能と仮定しない。Nix撤去前にrunnerのPATH依存も解消する。
+
+配布の実装と証拠はasc-mcp、ホスト設定とTailscale・Nix撤去はdotfiles、呼び出し方法はclaude-code plugin、アプリ固有のcommitと起動証拠はアプリrepoが所有する。
