@@ -2,7 +2,8 @@
 2026-11-09 新方式で検証したIPAをR2配布・Bark通知しiPhoneでインストール承認・起動・対象ビルド一致を本人確認する。旧経路の受付成功と実機未確認を区別する +ad-hoc @user see:docs/ad-hoc-delivery.md by:me dep:0011 id:0003
 2026-10-04 別環境へ移せることを確認するためクリーンcheckoutと別設定でIaC・登録プロジェクト・runner・OAuth・署名からMCP経由の配布まで再構築して検証する（まず設定と配置を検証、環境固有の認証操作は本人協力） +reproducibility @unattended dep:0013 id:0005
 (B) 2026-10-05 Xcode再ログイン後の保存1件とCLI配布成功は確認済み。次のXcode再起動後も保持・exportできるか確認する（02:44のAccountStore接続失効は観測、保存情報消失との因果は未確定） +distribution @user see:docs/verification/2026-10-05-xcode-account-persistence.json dep:0009 id:0008
-2026-11-09 MiniRouteTestの所有repoと固定commitを特定し対象iPhone向けAd Hoc IPAと不一致拒否を検証する +ad-hoc see:docs/ad-hoc-delivery.md by:me dep:0010,0014 id:0011
+2026-11-09 MiniRouteTestの所有repoと固定commitを特定し対象iPhone向けAd Hoc IPAと不一致拒否を検証する +ad-hoc see:docs/ad-hoc-delivery.md by:me dep:0010,0014,0015 id:0011
 2026-11-09 iPhone上のエージェントからActions起動・結果取得・重複実行・失敗通知を通しMacBookなしで配布リンクを得る +ad-hoc see:docs/ad-hoc-delivery.md by:me dep:0003 id:0012
 2026-11-09 miniのロック・再起動後のrunnerとKeychain・期限切れ・認証失効・配布失敗の復旧を検証しNixのPATH依存を置換する +ad-hoc see:docs/ad-hoc-delivery.md by:me dep:0012 id:0013
 2026-11-09 asc-sign所有者の実行contextで署名資材をread-only棚卸ししDistribution P12/password参照とMiniRouteTest profileの適合を確定する。gigunから候補はEACCES、sudo -nはpassword required。signing_inventory.pyは実装・gigun実走済み +ad-hoc @user see:docs/ad-hoc-delivery.md by:codex id:0014
+2026-11-09 build・sign・publishのOS実行主体と検査済み成果物の受渡しを配置して検証する。ad_hoc.pyの工程分割と環境制限は実装済みだが同一UID隔離や新runnerは未配置 +ad-hoc see:docs/ad-hoc-delivery.md dep:0014 by:codex id:0015
