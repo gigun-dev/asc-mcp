@@ -16,3 +16,4 @@ distribution/wrangler.production.json
 *.pem
 infra/backend.tf
 infra/*.tfbackend
+examples/MiniRouteTest/*.xcodeproj/
