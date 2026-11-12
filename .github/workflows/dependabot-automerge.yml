@@ -1,0 +1,38 @@
+name: Dependabot auto-merge
+
+on:
+  # zizmor: ignore[dangerous-triggers] No PR code is checked out or executed; the pinned
+  # metadata action verifies Dependabot's actor and commits before this workflow writes.
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && !github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read verified Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Require the narrow development-patch lane
+        if: >-
+          steps.metadata.outputs.package-ecosystem == 'npm' &&
+          steps.metadata.outputs.dependency-type == 'direct:development' &&
+          steps.metadata.outputs.update-type == 'version-update:semver-patch' &&
+          steps.metadata.outputs.maintainer-changes == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          unexpected="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}/files" \
+            --jq '.[].filename | select(. != "package.json" and . != "package-lock.json")')"
+          test -z "$unexpected"
+          gh pr merge --auto --squash "$PR_URL"

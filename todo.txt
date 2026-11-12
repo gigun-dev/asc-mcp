@@ -10,3 +10,4 @@
 2026-11-12 検査済みarchiveだけをasc-sign所有contextへ渡し、適合Distribution identity/profileでmanual Ad Hoc exportし、不一致・期限切れ・automatic provisioningを拒否する +ad-hoc @user see:docs/ad-hoc-delivery.md dep:0011 by:me id:0017
 2026-11-12 署名済みIPAをASC prepareで再検査してprivate publishし、固定source SHA・artifact digest・期限付きURL・再実行時の扱いを確認する +ad-hoc see:docs/ad-hoc-delivery.md dep:0017 by:me id:0018
 2026-11-12 Node 26 LTSでnpm test・Python連携・Worker dry-runを検証し、対応できたらpackage enginesとcheck/build workflowの固定版を同時更新する +runner by:me id:0019
+2026-11-12 Dependabot npmのdirect development patch PRだけを、変更ファイルがpackage.json/package-lock.jsonに限定されrequired checkがgreenの時にGitHub native auto-mergeへ予約する。production・indirect・Actions・major/minor・maintainer追記は手動に残し、代表PR受入後にryoppippi型へ段階拡張する +ci +security by:me id:0021 @wip
