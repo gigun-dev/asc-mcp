@@ -9,3 +9,4 @@
 2026-11-09 build・sign・publishのOS実行主体と検査済み成果物の受渡しを配置して検証する。ad_hoc.pyの工程分割と環境制限は実装済みだが同一UID隔離や新runnerは未配置 +ad-hoc see:docs/ad-hoc-delivery.md dep:0014 by:codex id:0015
 2026-11-12 検査済みarchiveだけをasc-sign所有contextへ渡し、適合Distribution identity/profileでmanual Ad Hoc exportし、不一致・期限切れ・automatic provisioningを拒否する +ad-hoc @user see:docs/ad-hoc-delivery.md dep:0011 by:me id:0017
 2026-11-12 署名済みIPAをASC prepareで再検査してprivate publishし、固定source SHA・artifact digest・期限付きURL・再実行時の扱いを確認する +ad-hoc see:docs/ad-hoc-delivery.md dep:0017 by:me id:0018
+2026-11-12 Node 26 LTSでnpm test・Python連携・Worker dry-runを検証し、対応できたらpackage enginesとcheck/build workflowの固定版を同時更新する +runner by:me id:0019

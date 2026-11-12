@@ -22,7 +22,7 @@ ASCが一時Keychainとprofileを管理する。独自Keychain daemonやone-use 
 
 2026-11-09の読み取りでは、miniの公式runner `mini-asc-mcp`はonline/idle、`gigun` UID501のGUI LaunchAgentで`SessionCreate=false`だった。Xcode 26.3 (17C529)、ASC `/Users/gigun/.local/bin/asc` 5.17.1。runnerのPATHには`.local/bin`とNixのユーザープロファイルが含まれ、非対話SSHのPATHではascを解決できなかった。control repoの`SERVICE_REVISION`は`081b0641df043a5a2cf1ac75eb734ca5899f2855`、最新成功runは2026-10-04の`37238379770`。これらは現在の署名成功を示さない。
 
-2026-11-12の再監査ではrunnerはonline/idleで、保存PATHはsystem 5要素、home 1要素、Nix user profile 1要素だった。Nix要素だけを外す候補PATHでも`python3`、`xcodebuild`、`git`、`asc`は解決し、`node`と`npm`だけが失われる。build workflowがcheck workflowと異なり`actions/setup-node`を呼ばず、hostのNodeを暗黙に使っていたことが原因だった。build workflowもcheckと同じ完全SHAのactionでNode 24.20.0を用意し、host PATHからNodeの供給責務を外す。実機PATHの切替は、このworkflowをprivate control repoへ反映して固定SHAのbuildを受入した後に行う。
+2026-11-12の再監査ではrunnerはonline/idleで、保存PATHはsystem 5要素、home 1要素、Nix user profile 1要素だった。Nix要素だけを外す候補PATHでも`python3`、`xcodebuild`、`git`、`asc`は解決し、`node`と`npm`だけが失われる。build workflowがcheck workflowと異なり`actions/setup-node`を呼ばず、hostのNodeを暗黙に使っていたことが原因だった。build workflowもcheckと同じ完全SHAのactionでNode 24.22.3を用意し、host PATHからNodeの供給責務を外す。これは現在の`engines`が許す24系の固定版であり、Node 26対応は依存互換性と`engines`を同時に更新する。`lts/*`の自動追従で同じworkflow SHAの結果を変えない。
 
 公開templateとprivate control repoへ反映後、登録済みprojectの信頼branchを完全SHAに解決して実行した。PATH切替前後の2回とも`setup-node`、`npm ci`、Xcode archiveは成功し、exportで現GUI runner contextにDistribution identityと有効なXcode accountが無いため停止した。Node由来の失敗は無く、切替後も同じ署名境界まで到達したため、runnerの保存PATHからNix user profile 1要素を除去した。残した6要素、runnerのonline/idle、値非表示のNix参照監査を確認した。これはarchive工程とPATH移行の受入であり、署名・publish・OTA配布の成功ではない。
 
