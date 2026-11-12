@@ -5,3 +5,4 @@ x 2026-10-05 2026-10-05 Xcode再ログイン後にMac miniのMCPビルドでAd H
 x 2026-11-09 2026-11-09 miniのrunner・署名資材を棚卸しし利用可否・不足・本人操作を確定する +ad-hoc see:docs/ad-hoc-delivery.md by:me id:0009
 x 2026-11-09 2026-11-09 build・sign・publishの実行主体・資格情報・検査・拒否・復旧と同一UIDの残存リスクを定義する +ad-hoc see:docs/ad-hoc-delivery.md by:me dep:0009 id:0010
 x 2026-11-12 2026-11-12 self-hosted build workflowでNode 24.20.0を固定setupし、mini runnerのNix PATH依存を外せることを検証する +runner see:docs/ad-hoc-delivery.md by:me id:0016
+x 2026-11-12 2026-11-12 Node 24のsecurity patchをcheck/build jobごとに自動追従し、majorはengines互換性検証後に更新する +runner by:me id:0020
