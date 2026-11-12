@@ -22,6 +22,8 @@ ASCが一時Keychainとprofileを管理する。独自Keychain daemonやone-use 
 
 2026-11-09の読み取りでは、miniの公式runner `mini-asc-mcp`はonline/idle、`gigun` UID501のGUI LaunchAgentで`SessionCreate=false`だった。Xcode 26.3 (17C529)、ASC `/Users/gigun/.local/bin/asc` 5.17.1。runnerのPATHには`.local/bin`とNixのユーザープロファイルが含まれ、非対話SSHのPATHではascを解決できなかった。control repoの`SERVICE_REVISION`は`081b0641df043a5a2cf1ac75eb734ca5899f2855`、最新成功runは2026-10-04の`37238379770`。これらは現在の署名成功を示さない。
 
+2026-11-12の再監査ではrunnerはonline/idleで、保存PATHはsystem 5要素、home 1要素、Nix user profile 1要素だった。Nix要素だけを外す候補PATHでも`python3`、`xcodebuild`、`git`、`asc`は解決し、`node`と`npm`だけが失われる。build workflowがcheck workflowと異なり`actions/setup-node`を呼ばず、hostのNodeを暗黙に使っていたことが原因だった。build workflowもcheckと同じ完全SHAのactionでNode 24.20.0を用意し、host PATHからNodeの供給責務を外す。実機PATHの切替は、このworkflowをprivate control repoへ反映して固定SHAのbuildを受入した後に行う。
+
 同じGUI security sessionでのidentity列挙ではApple Development 1件、Distributionは見えなかった。SSHだけで得た0件を全sessionの不在と扱わない。読み取れたprofileはDevelopment 2件とMCPHost Ad Hoc 1件で、MiniRouteTestへの適合と本人のiPhoneとの一致は未確定。`asc --read-only auth doctor`はgigunにASC保存認証がないと報告したが、別ユーザーの状態は示さない。
 
 取り込みcommit `fc92004edf24f88fe124a8c7c71d51d558498a1c`のgit archiveをminiに展開し、tarのpax commitとSHA-256 `9ae824464b3751816e7b177549584c2f0c39733171204e60f64de11100120b7b`を照合した。Xcode 26.3 / SDK 26.2 / ASC 5.17.1で未署名Release archiveを1回作成した。`dev.gigun.miniroutetest`、1.0 build 1、arm64、単一app、extensionなしで、embedded profileと署名はない。archive digest（sorted相対path + NUL + file SHA256 + newline）は`de54d7fd0b53fcf86f9c6a55e11c4b809136a9207719fcdb63167b75c3e12a0c`、7 files。archiveはminiの`Library/Caches/asc-mcp-verification/fc92004edf24-bc153d39/`、private receiptとlogはローカルworkに保持する。信頼済みsourceをgigunで実行したsmokeであり、隔離builder・署名・配布・実機起動の受入結果ではない。

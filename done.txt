@@ -4,3 +4,4 @@ x 2026-10-04 2026-10-04 完了記録・現行コードと残件を照合し重�
 x 2026-10-05 2026-10-05 Xcode再ログイン後にMac miniのMCPビルドでAd Hoc署名・ASC検証・固定URL公開が成功し新版配布を復旧した +distribution @unattended id:0007
 x 2026-11-09 2026-11-09 miniのrunner・署名資材を棚卸しし利用可否・不足・本人操作を確定する +ad-hoc see:docs/ad-hoc-delivery.md by:me id:0009
 x 2026-11-09 2026-11-09 build・sign・publishの実行主体・資格情報・検査・拒否・復旧と同一UIDの残存リスクを定義する +ad-hoc see:docs/ad-hoc-delivery.md by:me dep:0009 id:0010
+x 2026-11-12 2026-11-12 self-hosted build workflowでNode 24.20.0を固定setupし、mini runnerのNix PATH依存を外せることを検証する +runner see:docs/ad-hoc-delivery.md by:me id:0016
